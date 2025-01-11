@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import path from "path";
-import { generatePythonScript } from "./generatePythonScript";
-import { runChildProcess } from "./runChildProcess";
+import { generateAnswer } from "./generateAnswer";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,16 +15,23 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const code = await generatePythonScript(q);
-
-    // Run the child process and await the result
-    const scriptPath = path.resolve("src/scripts/call_pyodide.mjs");
-    const result = await runChildProcess(scriptPath, { code });
-
-    // Return the result as a JSON response
-    return new Response(JSON.stringify({ response: result }), {
-      headers: { "Content-Type": "application/json" },
+    const answer = await generateAnswer({
+      q,
+      reportStatus: (s) => {
+        console.log(s);
+      },
     });
+
+    return new Response(answer, {
+      headers: {
+        "Content-Type": "text/plain charset=UTF-8",
+      },
+    });
+
+    // // Return the result as a JSON response
+    // return new Response(JSON.stringify({ answer }), {
+    //   headers: { "Content-Type": "application/json" },
+    // });
   } catch (error) {
     const errorStr = error instanceof Error ? error.message : String(error);
     return new Response(JSON.stringify({ error: errorStr }), {

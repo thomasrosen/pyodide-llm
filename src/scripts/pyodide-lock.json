@@ -72,6 +72,28 @@
       "sha256": "fe3864fb083d707b6f5ac8f5d48456a5c25dd422e0035fc89bad8837c41e6de9",
       "unvendored_tests": true,
       "version": "2024.9.11"
+    },
+    "sympy": {
+      "depends": ["mpmath"],
+      "file_name": "sympy-1.13.3-py3-none-any.whl",
+      "imports": ["isympy", "sympy"],
+      "install_dir": "site",
+      "name": "sympy",
+      "package_type": "package",
+      "sha256": "39920ece0f4a34e7ad44a6e1c81d92f439d3b22e6af3ecb29fcee0e6f244624e",
+      "unvendored_tests": true,
+      "version": "1.13.3"
+    },
+    "mpmath": {
+      "depends": [],
+      "file_name": "mpmath-1.3.0-py3-none-any.whl",
+      "imports": ["mpmath"],
+      "install_dir": "site",
+      "name": "mpmath",
+      "package_type": "package",
+      "sha256": "7cc45aafc5702ac0b27ec6408ad996b44a3198c28abacf3d4cdd1550451eac13",
+      "unvendored_tests": true,
+      "version": "1.3.0"
     }
   }
 }

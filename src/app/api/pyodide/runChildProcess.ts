@@ -8,7 +8,9 @@ export type CallPyodideResult = {
 
 export async function runChildProcess(
   scriptPath: string,
-  payload: Record<string, unknown>
+  payload: {
+    code: string;
+  }
 ): Promise<unknown> {
   return new Promise((resolve) => {
     const child = fork(scriptPath);
