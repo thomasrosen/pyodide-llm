@@ -1,15 +1,15 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { generateText, tool } from "ai";
+import { smoothStream, streamText, tool } from "ai";
 import { z } from "zod";
 import { runPythonCode } from "./runPythonCode";
 
-export async function generateAnswer({
+export async function streamAnswer({
   q,
   reportStatus,
 }: {
   q: string;
   reportStatus: (s: string) => void;
-}): Promise<string> {
+}) {
   reportStatus("Generating answer...");
 
   const systemPrompt = `
@@ -29,6 +29,8 @@ export async function generateAnswer({
 
   Use markdown formating.
   Wrap code in a markdown code block.
+
+  Stop when sufficient information was provided.
   `;
 
   q = `what is 8 + 6 ? pls include the python code
@@ -39,7 +41,7 @@ export async function generateAnswer({
     compatibility: "strict",
   });
 
-  const { text } = await generateText({
+  const { textStream } = await streamText({
     model: openai("gpt-4o"),
     messages: [
       {
@@ -102,9 +104,15 @@ If the script fails, you can generate a new script and try again. Pls only once.
     temperature: 1,
     maxSteps: 5, // allow up to 10 steps
     maxTokens: 1000, // allow up to 1000 tokens
+    experimental_continueSteps: true,
+    experimental_transform: smoothStream({
+      delayInMs: 20, // optional: defaults to 10ms
+      chunking: "line", // optional: defaults to 'word'
+    }),
+    onFinish: async () => {
+      reportStatus("Finished!");
+    },
   });
 
-  reportStatus("Answer generated.");
-
-  return text;
+  return { textStream };
 }
