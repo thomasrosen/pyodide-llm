@@ -1,14 +1,17 @@
+import { Data } from "@/types";
 import { createOpenAI } from "@ai-sdk/openai";
 import { smoothStream, streamText, tool } from "ai";
 import { z } from "zod";
 import { runPythonCode } from "./runPythonCode";
 
 export async function streamAnswer({
-  q,
+  messages,
   reportStatus,
+  setPreview,
 }: {
-  q: string;
+  messages: Data[];
   reportStatus: (s: string) => void;
+  setPreview: (p: string) => void;
 }) {
   reportStatus("generating_answer");
 
@@ -22,33 +25,47 @@ export async function streamAnswer({
   You MUST STRICTLY COPY the results of the tool calls into your answer. This is for documentation purposes. Including the full tool call input and output is mandatory.
 
   Do NOT use a sentence similar to "When you run this code, it will output".
-  Answer the user request based on the results of the tool calls. Answer in a sentence. Fit your answer to the user request.
+  Answer the user request based on the results of the tool calls. Answer in a sentence. Fit your answer to the user request. But always include the results of the tool calls (the python code and the result of the code).
 
   You MUST always include the raw python CODE in your answer if a python script was generated. Regardless if the script was successful or not. Include the error of the script if it failed. These are strict requirements.
   Do not talk about the code in prosa, but you must include the code in your answer.
 
   Use markdown formating.
-  Wrap code in a markdown code block.
-
+  Wrap code with a markdown code fence. Include the language.
+  
+  Render math with latex as follows:
+  For inline math: Wrap with $$…$$ or $…$.
+  For block math:
+  \`\`\`math
+  …
+  \`\`\`
+  or as follows:
+  $$
+  …
+  $$
+  
   Stop when sufficient information was provided.
+  Always output the python-script along with the result of the script.
   `;
 
   const openai = createOpenAI({
     compatibility: "strict",
   });
 
+  const fullMessages = [
+    {
+      role: "system",
+      content: systemPrompt,
+    },
+    ...messages.map((m) => ({
+      role: m.role || ("user" as any),
+      content: m.content || m.preview || ("" as any),
+    })),
+  ];
+
   const { textStream } = await streamText({
     model: openai("gpt-4o"),
-    messages: [
-      {
-        role: "system",
-        content: systemPrompt,
-      },
-      {
-        role: "user",
-        content: q,
-      },
-    ],
+    messages: fullMessages,
     tools: {
       run_python: tool({
         description: `
@@ -87,6 +104,9 @@ If the script fails, you can generate a new script and try again. Pls only once.
         }),
         execute: async ({ python_code }) => {
           reportStatus("running_python");
+          setPreview(`\`\`\`python
+${python_code}
+\`\`\``);
 
           return {
             code: python_code,
@@ -100,7 +120,7 @@ If the script fails, you can generate a new script and try again. Pls only once.
     temperature: 1,
     maxSteps: 5, // allow up to 10 steps
     maxTokens: 1000, // allow up to 1000 tokens
-    experimental_continueSteps: true,
+    // experimental_continueSteps: true,
     experimental_transform: smoothStream({
       delayInMs: 10, // optional: defaults to 10ms
       chunking: "line", // optional: defaults to 'word'

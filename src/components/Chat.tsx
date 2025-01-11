@@ -1,13 +1,60 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { fetchAndStreamUpdates } from "@/lib/fetchAndStreamUpdates";
+import { renderMarkdown } from "@/lib/renderMarkdown";
+import { cn } from "@/lib/utils";
+import { Data } from "@/types";
 import { useCallback, useRef, useState } from "react";
 
+function FormatedMarkdown({
+  className,
+  markdown,
+}: {
+  className?: string;
+  markdown?: string;
+}) {
+  if (markdown) {
+    return renderMarkdown(markdown);
+    // return (
+    //   <P
+    //     className={className}
+    //     dangerouslySetInnerHTML={{
+    //       __html: markdown.replaceAll("\n", "<br />"),
+    //     }}
+    //   />
+    // );
+  }
+
+  return null;
+}
+
+const initialMessages: Data[] = [];
+
 export function Chat() {
-  const messagesRef = useRef<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const messagesRef = useRef<Data[]>(initialMessages);
+  const [messages, setMessages] = useState<Data[]>(initialMessages);
+  const [input, setInput] = useState("");
+
+  const updateMessages = useCallback(() => {
+    setMessages(JSON.parse(JSON.stringify(messagesRef.current)));
+  }, []);
 
   const startChat = useCallback(async () => {
+    if (!input) {
+      return;
+    }
+
+    messagesRef.current.push({
+      role: "user",
+      content: input,
+      status: [],
+    });
+    setInput("");
+
     const streamingObject = await fetchAndStreamUpdates(
       "/api/chat",
       {
@@ -15,53 +62,88 @@ export function Chat() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ q: "was is 7 mal 3 ?" }),
+        body: JSON.stringify({ messages: messagesRef.current }),
       },
       {},
       () => {
-        setMessages(JSON.parse(JSON.stringify(messagesRef.current)));
+        updateMessages();
       }
     );
 
-    console.log("streamingObject", streamingObject);
     messagesRef.current.push(streamingObject);
-    setMessages(JSON.parse(JSON.stringify(messagesRef.current)));
-  }, []);
+    updateMessages();
+  }, [input]);
 
   return (
-    <div
-      style={{
-        padding: "1rem",
-        border: "1px solid black",
-      }}
-    >
-      <h1>Chat</h1>
-      <p>Chat with the AI</p>
-      <button onClick={startChat}>Start Chat</button>
+    <>
+      <div className="flex flex-col gap-8 mb-16">
+        {messages.map((msg, index) => {
+          const status = msg.status || [];
 
-      {messages.map((msg, index) => {
-        let latestestStatus: string | undefined = (msg.status || []).slice(
-          -1
-        )[0];
-        if (latestestStatus === "done") {
-          latestestStatus = undefined;
-        }
+          let latestestStatus: string | undefined = status.slice(-1)[0];
+          if (latestestStatus === "done") {
+            latestestStatus = undefined;
+          }
 
-        return (
-          <div key={JSON.stringify(msg)}>
-            {latestestStatus && (
-              <p>
-                <strong>{latestestStatus}</strong>
-              </p>
-            )}
-            <p
-              dangerouslySetInnerHTML={{
-                __html: (msg.content || "").replaceAll("\n", "<br />"),
-              }}
-            />
-          </div>
-        );
-      })}
-    </div>
+          const isLoading = !msg.content && !status.includes("done");
+
+          const role = msg.role || "user";
+
+          return (
+            <div
+              key={`${index}_${JSON.stringify(msg)}`}
+              className={cn(
+                "flex flex-row",
+                role === "user" ? "justify-end" : "justify-start"
+              )}
+            >
+              {role === "assistant" ? (
+                <div className="flex flex-col gap-2 justify-start w-full">
+                  <div>
+                    {latestestStatus && <Badge>{latestestStatus}</Badge>}
+                  </div>
+                  <FormatedMarkdown
+                    className={cn("!m-0", isLoading && "animate-pulse")}
+                    markdown={msg.content || msg.preview}
+                  />
+                </div>
+              ) : null}
+
+              {role === "user" ? (
+                <Card
+                  className={cn(
+                    "max-w-3xl ms-16 w-fit py-2 px-4 rounded-lg",
+                    isLoading && "animate-pulse"
+                  )}
+                >
+                  <CardContent className="p-0 chat_bubble">
+                    <FormatedMarkdown markdown={msg.content || msg.preview} />
+                  </CardContent>
+                </Card>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          startChat();
+        }}
+      >
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Textarea
+            onChange={(e) => {
+              setInput(e.target.value);
+            }}
+            value={input}
+            placeholder="Type your message here"
+            className="w-full"
+          />
+          <Button type="submit">Send Message</Button>
+        </div>
+      </form>
+    </>
   );
 }

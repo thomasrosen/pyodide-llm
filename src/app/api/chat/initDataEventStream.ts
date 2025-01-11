@@ -1,7 +1,7 @@
+import { Data } from "@/types";
 import * as jsonpatch from "fast-json-patch";
 import { applyReducer } from "fast-json-patch";
 
-type Data = Record<string, any>;
 type setDataPropsReturn = Data | undefined | void;
 type setDataProps = (
   data: Data
@@ -28,8 +28,9 @@ export function initDataEventStream(
     Connection: "keep-alive",
   };
 
-  const wrapper: { data: Data } = { data: {} };
-  const data_observer = jsonpatch.observe<Object>(wrapper.data, (patches) => {
+  const wrapper: { data: Data } = { data: {} }; // a wrapper to be able to replace the whole data object
+
+  const data_observer = jsonpatch.observe(wrapper.data, (patches) => {
     for (const patch of patches) {
       writer.write(encoder.encode(`data: ${JSON.stringify(patch)}\n\n`));
     }
@@ -38,7 +39,7 @@ export function initDataEventStream(
   async function fireGenerate() {
     // always generate patch for the current data
     // this will automatically trigger the writer.write
-    jsonpatch.generate(data_observer);
+    jsonpatch.generate(data_observer as jsonpatch.Observer<Data>);
   }
 
   async function compareFullChange(newData?: Data) {

@@ -8,16 +8,26 @@ export const dynamic = "force-dynamic"; // Prevent caching
 export function POST(request: NextRequest) {
   const { readable, headers } = initDataEventStream(async ({ setData }) => {
     const body = await request.json();
-    let q = body.q;
+    let messages = body.messages;
 
-    if (!q) {
-      throw new Error("Pls provide a query.");
+    if (!messages || !messages.length) {
+      throw new Error("Pls provide some messages.");
     }
 
-    q = `what is 4 + 2 ? pls also return the code`;
+    setData((data) => {
+      data.role = "assistant";
+    });
 
     const { textStream } = await streamAnswer({
-      q,
+      messages,
+      setPreview: (newPreview) => {
+        setData((data) => {
+          if (!data.preview) {
+            data.preview = "";
+          }
+          data.preview = newPreview;
+        });
+      },
       reportStatus: (newStatus) => {
         setData((data) => {
           if (!data.status) {
