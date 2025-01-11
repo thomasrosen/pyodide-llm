@@ -34,6 +34,9 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  outputFileTracingIncludes: {
+    "/api/pyodide": ["./src/scripts/**/*"],
+  },
 };
 
 export default nextConfig;
