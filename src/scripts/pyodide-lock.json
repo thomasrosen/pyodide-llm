@@ -1,0 +1,77 @@
+{
+  "info": {
+    "abi_version": "2024_0",
+    "arch": "wasm32",
+    "platform": "emscripten_3_1_58",
+    "python": "3.12.7",
+    "version": "0.27.0"
+  },
+  "packages": {
+    "packaging": {
+      "depends": [],
+      "file_name": "packaging-23.2-py3-none-any.whl",
+      "imports": ["packaging"],
+      "install_dir": "site",
+      "name": "packaging",
+      "package_type": "package",
+      "sha256": "1b2d8e2658c66d163aa25d1d2bf648010b495c33a05e2ec1b5cbb3cf49f5196f",
+      "unvendored_tests": false,
+      "version": "23.2"
+    },
+    "micropip": {
+      "depends": ["packaging"],
+      "file_name": "micropip-0.8.0-py3-none-any.whl",
+      "imports": ["micropip"],
+      "install_dir": "site",
+      "name": "micropip",
+      "package_type": "package",
+      "sha256": "4164be7009905e63038cb278667beac17edbeae00641a31b0c7a0b21466fb886",
+      "unvendored_tests": false,
+      "version": "0.8.0"
+    },
+    "six": {
+      "depends": [],
+      "file_name": "six-1.16.0-py2.py3-none-any.whl",
+      "imports": ["six"],
+      "install_dir": "site",
+      "name": "six",
+      "package_type": "package",
+      "sha256": "b8d069ae521a27110f9c147261172bfe168da0267c13edc1a8cdb0b7988e69b0",
+      "unvendored_tests": false,
+      "version": "1.16.0"
+    },
+    "python-dateutil": {
+      "depends": ["six"],
+      "file_name": "python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+      "imports": ["dateutil"],
+      "install_dir": "site",
+      "name": "python-dateutil",
+      "package_type": "package",
+      "sha256": "4fb331abf67d8590201c29dd6e73e40699667a26440a1df04318831a9a5ff479",
+      "unvendored_tests": false,
+      "version": "2.9.0.post0"
+    },
+    "numpy": {
+      "depends": [],
+      "file_name": "numpy-2.0.2-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "imports": ["numpy"],
+      "install_dir": "site",
+      "name": "numpy",
+      "package_type": "package",
+      "sha256": "a6ccf853fa81e17c00ef594298410284a9cdde836efd7664dcc28c3b7ecad819",
+      "unvendored_tests": true,
+      "version": "2.0.2"
+    },
+    "regex": {
+      "depends": [],
+      "file_name": "regex-2024.9.11-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "imports": ["regex"],
+      "install_dir": "site",
+      "name": "regex",
+      "package_type": "package",
+      "sha256": "fe3864fb083d707b6f5ac8f5d48456a5c25dd422e0035fc89bad8837c41e6de9",
+      "unvendored_tests": true,
+      "version": "2024.9.11"
+    }
+  }
+}
