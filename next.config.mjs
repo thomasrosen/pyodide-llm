@@ -35,7 +35,7 @@ const nextConfig = {
   },
   experimental: {
     outputFileTracingIncludes: {
-      "/api/pyodide": ["./src/scripts/**/*"],
+      "/api/chat": ["./src/scripts/**/*"],
     },
   }
 };
