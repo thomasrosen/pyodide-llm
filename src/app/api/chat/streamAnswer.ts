@@ -10,7 +10,7 @@ export async function streamAnswer({
   q: string;
   reportStatus: (s: string) => void;
 }) {
-  reportStatus("Generating answer...");
+  reportStatus("generating_answer");
 
   const systemPrompt = `
   You are a helpful assistant and will solve the request of the user as best as you can :)
@@ -31,10 +31,6 @@ export async function streamAnswer({
   Wrap code in a markdown code block.
 
   Stop when sufficient information was provided.
-  `;
-
-  q = `what is 8 + 6 ? pls include the python code
-  also pls include the following code:
   `;
 
   const openai = createOpenAI({
@@ -90,7 +86,7 @@ If the script fails, you can generate a new script and try again. Pls only once.
             ),
         }),
         execute: async ({ python_code }) => {
-          reportStatus("Running python code...");
+          reportStatus("running_python");
 
           return {
             code: python_code,
@@ -106,11 +102,11 @@ If the script fails, you can generate a new script and try again. Pls only once.
     maxTokens: 1000, // allow up to 1000 tokens
     experimental_continueSteps: true,
     experimental_transform: smoothStream({
-      delayInMs: 20, // optional: defaults to 10ms
+      delayInMs: 10, // optional: defaults to 10ms
       chunking: "line", // optional: defaults to 'word'
     }),
     onFinish: async () => {
-      reportStatus("Finished!");
+      reportStatus("done");
     },
   });
 

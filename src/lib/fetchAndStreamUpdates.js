@@ -1,6 +1,7 @@
+import EventSourceStream from "@server-sent-stream/web";
 import * as jsonpatch from 'fast-json-patch';
 
-export async function fetchAndStreamUpdates(url, options, initialData = {}) {
+export async function fetchAndStreamUpdates(url, options, initialData = {}, onChange) {
   const targetDocument = { ...initialData };
 
   // Handle streaming response and apply patches
@@ -12,11 +13,22 @@ export async function fetchAndStreamUpdates(url, options, initialData = {}) {
         throw new Error('ReadableStream not supported in this browser.');
       }
 
-      const stream = response.body.pipeThrough(new TextDecoderStream());
+      // Pipe the response body into an EventSourceStream
+      const decoder = new EventSourceStream();
+      response.body.pipeThrough(decoder);
 
-      for await (const chunk of stream) {
+      console.log('decoder', decoder)
+      // const reader = decoder.readable.getReader();
+
+      // const stream = decoder.pipeThrough(new TextDecoderStream());
+      for await (const chunk of decoder.readable) {
         try {
-          const patch = JSON.parse(chunk); // Assuming the patch is valid
+          if (!chunk) {
+            continue;
+          }
+
+          console.log('chunk', chunk);
+          const patch = JSON.parse(chunk.data); // Assuming the patch is valid
 
           // Ensure patch does not replace the entire document with a non-object
           if (patch.path === '' && (patch.op === 'replace' || patch.op === 'add')) {
@@ -28,6 +40,7 @@ export async function fetchAndStreamUpdates(url, options, initialData = {}) {
 
           // Apply the patch
           jsonpatch.applyOperation(targetDocument, patch);
+          onChange(patch);
         } catch (error) {
           console.error('Error applying patch:', error);
         }
@@ -41,20 +54,3 @@ export async function fetchAndStreamUpdates(url, options, initialData = {}) {
 
   return targetDocument;
 }
-
-/*
-const updatesArray = [];
-
-const streamingObject = fetchAndStreamUpdates('/your-endpoint', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({ key: 'value' }),
-}, { initialKey: 'initialValue' });
-
-updatesArray.push(streamingObject);
-
-console.log('Initial object:', updatesArray[0]);
-
-*/

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.17",
+    "@server-sent-stream/web": "^1.0.3",
     "ai": "^4.0.33",
     "fast-json-patch": "^3.1.1",
     "next": "15.1.4",
