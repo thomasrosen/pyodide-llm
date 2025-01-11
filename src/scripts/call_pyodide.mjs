@@ -5,8 +5,12 @@ process.on("message", async ({ code }) => {
     let stdout_logs = []
 
     // Check which packages should be made available to the Python code
-    const availablePackages = ['micropip', "numpy", 'python-dateutil', 'regex']
-    const packages = availablePackages.filter(pkg => code.includes(`import ${pkg}`));
+    const availablePackages = ['micropip', "numpy", 'python-dateutil', 'regex', 'six', 'packaging'];
+    let packages = [...availablePackages.filter(pkg => code.includes(`import ${pkg}`)), ...availablePackages.filter(pkg => code.includes(`from ${pkg}`))]
+    if (code.includes('import dateutil') || code.includes('from dateutil')) {
+      packages.push('python-dateutil');
+    }
+    packages = [...new Set(packages)];
 
     // Load Pyodide with the required packages
     const pyodide = await loadPyodide({
@@ -22,7 +26,7 @@ process.on("message", async ({ code }) => {
     const result = await pyodide.runPythonAsync(code || "");
 
     // Send the result back to the parent
-    process.send({ stdout: stdout_logs.join('\n'), result });
+    process.send({ stdout: stdout_logs.length ? stdout_logs.join('\n') : undefined, result });
   } catch (error) {
     process.send({ error: error.message });
   }
