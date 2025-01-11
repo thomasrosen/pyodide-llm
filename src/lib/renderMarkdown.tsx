@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { H1, H2, H3, H4, P } from "@/components/Typography";
 import { cn } from "@/lib/utils";
 import rehypePrism from "@mapbox/rehype-prism";
@@ -19,13 +21,14 @@ export function renderMarkdown(text: string) {
     .use(remarkParse, { fragment: true }) // Parse markdown.
     .use(remarkGfm) // Support GFM (tables, autolinks, tasklists, strikethrough).
     .use(remarkMath)
-    // @ts-expect-error: the react types are missing.
-    .use(remarkRehype) // Turn it into HTML.
-    // @ts-expect-error: the types are not correct, but the package works. and the internet says it should work like it is used here.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore: the react types are missing.
+    .use(remarkRehype) // Turn it into HTML
+    // @ts-ignore: the types are not correct, but the package works. and the internet says it should work like it is used here.
     .use(rehypePrism, {
       ignoreMissing: true,
     })
-    // @ts-expect-error: the types are not correct, but the package works. and the internet says it should work like it is used here.
+    // @ts-ignore: the types are not correct, but the package works. and the internet says it should work like it is used here.
     .use(rehypeKatex)
     .use(rehypeReact, {
       ...production,

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic"; // Prevent caching
 export function POST(request: NextRequest) {
   const { readable, headers } = initDataEventStream(async ({ setData }) => {
     const body = await request.json();
-    let messages = body.messages;
+    const messages = body.messages;
 
     if (!messages || !messages.length) {
       throw new Error("Pls provide some messages.");

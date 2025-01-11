@@ -10,23 +10,9 @@ import { cn } from "@/lib/utils";
 import { Data } from "@/types";
 import { useCallback, useRef, useState } from "react";
 
-function FormatedMarkdown({
-  className,
-  markdown,
-}: {
-  className?: string;
-  markdown?: string;
-}) {
+function FormatedMarkdown({ markdown }: { markdown?: string }) {
   if (markdown) {
     return renderMarkdown(markdown);
-    // return (
-    //   <P
-    //     className={className}
-    //     dangerouslySetInnerHTML={{
-    //       __html: markdown.replaceAll("\n", "<br />"),
-    //     }}
-    //   />
-    // );
   }
 
   return null;
@@ -72,7 +58,7 @@ export function Chat() {
 
     messagesRef.current.push(streamingObject);
     updateMessages();
-  }, [input]);
+  }, [input, updateMessages]);
 
   return (
     <>
@@ -102,10 +88,7 @@ export function Chat() {
                   <div>
                     {latestestStatus && <Badge>{latestestStatus}</Badge>}
                   </div>
-                  <FormatedMarkdown
-                    className={cn("!m-0", isLoading && "animate-pulse")}
-                    markdown={msg.content || msg.preview}
-                  />
+                  <FormatedMarkdown markdown={msg.content || msg.preview} />
                 </div>
               ) : null}
 

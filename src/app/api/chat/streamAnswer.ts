@@ -1,6 +1,6 @@
 import { Data } from "@/types";
 import { createOpenAI } from "@ai-sdk/openai";
-import { smoothStream, streamText, tool } from "ai";
+import { CoreMessage, smoothStream, streamText, tool } from "ai";
 import { z } from "zod";
 import { runPythonCode } from "./runPythonCode";
 
@@ -58,14 +58,14 @@ export async function streamAnswer({
       content: systemPrompt,
     },
     ...messages.map((m) => ({
-      role: m.role || ("user" as any),
-      content: m.content || m.preview || ("" as any),
+      role: m.role || "user",
+      content: m.content || m.preview || "",
     })),
   ];
 
   const { textStream } = await streamText({
     model: openai("gpt-4o"),
-    messages: fullMessages,
+    messages: fullMessages as unknown as CoreMessage[],
     tools: {
       run_python: tool({
         description: `

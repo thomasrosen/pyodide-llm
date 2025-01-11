@@ -21,9 +21,8 @@
 
 // export default nextConfig;
 
-import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const nextConfig = {
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.module.exprContextCritical = false; // Suppress warnings for critical dependencies
